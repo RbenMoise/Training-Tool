@@ -19,6 +19,9 @@ import { UserProvider } from "./contexts/UserContext";
 import { LogoutProvider } from "./contexts/LogoutContext";
 import PrivateRoute from "./components/PrivateRoute";
 
+// for the components
+import Login2 from "./components2/Login/Login";
+
 export default function App() {
   const [loading, setLoading] = useState(true);
 
@@ -34,6 +37,7 @@ export default function App() {
         <LogoutProvider>
           <Routes>
             <Route path="/login" element={<Login />} />
+            <Route path="/login2" element={<Login2 />} />
             <Route path="/register" element={<Register />} />
             <Route path="/" element={<Landing />} />
             <Route
