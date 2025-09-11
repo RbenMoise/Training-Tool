@@ -19,8 +19,14 @@ import { UserProvider } from "./contexts/UserContext";
 import { LogoutProvider } from "./contexts/LogoutContext";
 import PrivateRoute from "./components/PrivateRoute";
 
-// for the components
-import Login2 from "./components2/Login/Login";
+// for the components2
+import Home_Attendance from "./components2/home_Attendance/Home_Attendance";
+import CreateProjectForm from "./components2/createprojectform/CreateProjectForm";
+import TeamSelection from "./components2/teamselection/TeamSelection";
+import ProjectDashboard from "./components2/projectdashboard/ProjectDashboard";
+import RecordAttendance from "./components2/recordattendance/RecordAttendance";
+import SignUp from "./components2/signup/SignUp";
+import SignIn from "./components2/signin/SignIn";
 
 export default function App() {
   const [loading, setLoading] = useState(true);
@@ -37,7 +43,19 @@ export default function App() {
         <LogoutProvider>
           <Routes>
             <Route path="/login" element={<Login />} />
-            <Route path="/login2" element={<Login2 />} />
+            <Route path="/homeAttendance" element={<Home_Attendance />} />
+              <Route path="/createprojectform" element={<CreateProjectForm />} />
+               <Route path="/teamselection" element={<TeamSelection />} />
+               <Route path="/projectdashboard" element={<ProjectDashboard />} />
+                <Route path="/recordattendance" element={<RecordAttendance />} />
+                 <Route path="/signup" element={<SignUp />} />
+                   <Route path="/signin" element={<SignIn />} />
+              
+
+
+
+
+
             <Route path="/register" element={<Register />} />
             <Route path="/" element={<Landing />} />
             <Route

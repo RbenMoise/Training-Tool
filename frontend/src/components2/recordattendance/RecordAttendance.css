@@ -1,0 +1,443 @@
+/* RecordAttendance.css - Apple-inspired Design */
+
+.record-attendance {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+  color: #ffffff;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  padding-bottom: 100px;
+}
+
+.recordattendance-header {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 2rem 0;
+}
+
+.recordheader-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  text-align: center;
+}
+
+.recordheader-content h1 {
+  font-size: 2.9rem;
+  font-weight: 700;
+  margin: 0 0 1rem 0;
+  background: linear-gradient(135deg, #94d500 0%, #e74c3c 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.recordproject-period {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.recordproject-period strong {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #94d500;
+  font-size: 1.5rem;
+}
+
+.recordproject-period p {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.recordattendance-content {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 2rem;
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 2rem;
+}
+
+.recordmain-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.recordmark-attendance-card,
+.recordsummary-card,
+.recordteam-overview-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  border-radius: 16px;
+  padding: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.recordsection-header {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.recordsection-header h2 {
+  font-size: 1.7rem;
+  font-weight: 600;
+  margin: 0;
+  color: #ffffff;
+}
+
+.recordsection-header h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0;
+  color: #ffffff;
+}
+
+.recordinput-group {
+  margin-bottom: 1.5rem;
+}
+
+.recordinput-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1.4rem;
+}
+
+.recorddate-input,
+.recordstaff-input {
+  position: relative;
+  display: flex;
+  align-items: center;
+  
+}
+
+.recorddate-input .modern-input {
+  padding-left: 2.5rem;
+  font-size: 1.2rem;
+}
+
+.recordstaff-input {
+  gap: 0.5rem;
+}
+
+.recordstaff-input .modern-input {
+  flex: 1;
+   font-size: 1.2rem;
+}
+
+.recordmodern-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+
+  transition: all 0.3s ease;
+}
+
+.recordmodern-input:focus {
+  outline: none;
+  border-color: #94d500;
+  box-shadow: 0 0 0 3px rgba(148, 213, 0, 0.2);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.recorddate-input svg {
+  position: absolute;
+  left: 1rem;
+  color: rgba(255, 255, 255, 0.7);
+  z-index: 1;
+}
+
+.recordadd-button {
+  padding: 0.75rem 1rem;
+  background: linear-gradient(135deg, #94d500, #82bc00);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.recordadd-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(148, 213, 0, 0.3);
+}
+
+.recorderror-message {
+  color: #e74c3c;
+  font-size: 1.3rem;
+  margin-top: 0.5rem;
+}
+
+.recordattendance-list-section {
+  margin-top: 2rem;
+}
+
+.recordlist-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.recordlist-header h3 {
+  color: #94d500;
+  margin: 0;
+   font-size: 1.5rem;
+}
+
+.recordclear-button {
+  background: rgba(231, 76, 60, 0.2);
+  color: #e74c3c;
+  border: 1px solid rgba(231, 76, 60, 0.3);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.recordclear-button:hover {
+  background: rgba(231, 76, 60, 0.3);
+}
+
+.recordattendance-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.recordattendance-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.recordattendance-item:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateX(4px);
+}
+
+.recordemployee-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.recordemployee-name {
+  font-weight: 600;
+  color: #ffffff;
+   font-size: 1.4rem;
+}
+
+.recordemployee-id {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.recordremove-button {
+  background: rgba(231, 76, 60, 0.2);
+  color: #e74c3c;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.recordremove-button:hover {
+  background: rgba(231, 76, 60, 0.3);
+}
+
+.recordsummary-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.recordstat-item {
+  text-align: center;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+}
+
+.recordstat-label {
+  font-size: 1.5rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 0.5rem;
+}
+
+.recordstat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #94d500;
+}
+
+.recordalready-present h3 {
+  color: #94d500;
+  margin-bottom: 1rem;
+   font-size: 1.5rem;
+}
+
+.recordempty-state {
+  text-align: center;
+  padding: 2rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.recordempty-state p {
+font-size: 1.5rem;
+}
+
+.recordempty-state svg {
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.recordteam-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.recordteam-member-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.recordteam-member-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.recordmember-name {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+}
+
+.recordmember-id {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.recordfloating-action {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+}
+
+.record-button {
+  padding: 1rem 2rem;
+  background: linear-gradient(135deg, #94d500, #82bc00);
+  color: white;
+  border: none;
+  border-radius: 50px;
+  font-weight: 600;
+  font-size: 1.3rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 8px 32px rgba(148, 213, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.record-button:hover {
+  transform: translateY(-2px) translateX(-50%);
+  box-shadow: 0 12px 40px rgba(148, 213, 0, 0.4);
+}
+
+/* Responsive Design */
+@media (max-width: 968px) {
+  .recordattendance-content {
+    grid-template-columns: 1fr;
+  }
+  
+  .recordsidebar-section {
+    order: -1;
+  }
+}
+
+@media (max-width: 640px) {
+  .recordheader-content,
+  .recordattendance-content {
+    padding: 1rem;
+  }
+  
+  .recordheader-content h1 {
+    font-size: 2rem;
+  }
+  
+  .recordmark-attendance-card,
+  .recordsummary-card,
+  .recordteam-overview-card {
+    padding: 1.5rem;
+  }
+  
+  .recordstaff-input {
+    flex-direction: column;
+  }
+  
+  .recordsummary-stats {
+    grid-template-columns: 1fr;
+  }
+  
+  .recordlist-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .record-button {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+  }
+}
+
+/* Animations */
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.recordmark-attendance-card,
+.recordsummary-card,
+.recordteam-overview-card {
+  animation: slideInUp 0.6s ease;
+}
+
+.recordattendance-item {
+  animation: slideInUp 0.4s ease;
+}

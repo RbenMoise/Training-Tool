@@ -1,0 +1,318 @@
+/* FieldAttendanceTracker.css - Modern Apple-inspired Design */
+
+.field-attendance-container {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+  color: #fff;
+  background-color: #000;
+  min-height: 100vh;
+  width: 100%;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Background with subtle gradient for depth */
+.field-attendance-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  background: radial-gradient(circle at 20% 30%, #1a1a1a 0%, #000000 100%);
+  z-index: -1;
+}
+
+.attendance-header {
+  text-align: center;
+  margin-bottom: 60px;
+  padding: 40px 20px 30px;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.attendance-header h1 {
+  color: #fff;
+  margin-bottom: 15px;
+  font-size: 4.5rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  background: linear-gradient(135deg, #94d500 0%, #e74c3c 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.attendance-header p {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 2.0rem;
+  font-weight: 900;
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.5;
+}
+
+.features-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 30px;
+  margin-bottom: 60px;
+  padding: 0 20px;
+}
+
+.feature-card {
+  flex: 1;
+  min-width: 280px;
+  max-width: 350px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
+  padding: 35px 30px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  text-align: center;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.feature-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #94d500, #e74c3c);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.feature-card:hover::before {
+  opacity: 1;
+}
+
+.feature-icon {
+  font-size: 3.9rem;
+  margin-bottom: 20px;
+  display: block;
+  background: linear-gradient(135deg, #94d500 0%, #e74c3c 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 5px 15px rgba(148, 213, 0, 0.3));
+}
+
+.feature-card h2 {
+  color: #fff;
+  margin-bottom: 15px;
+  font-size: 2.0rem;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+}
+
+.feature-card p {
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.6;
+  font-size: 1.4rem;
+  font-weight: 300;
+}
+
+.get-started-section {
+  text-align: center;
+  padding: 50px 30px;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  border-radius: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  margin-bottom: 0;
+}
+
+.get-started-section h2 {
+  color: #fff;
+  margin-bottom: 30px;
+  font-size: 2.4rem;
+  font-weight: 600;
+  letter-spacing: -0.5px;
+}
+
+.create-project-btn {
+  background: linear-gradient(135deg, #94d500 0%, #82bc00 100%);
+  color: #000;
+  border: none;
+  padding: 18px 40px;
+  font-size: 1.3rem;
+  font-weight: 600;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 20px;
+  box-shadow: 0 10px 20px rgba(148, 213, 0, 0.25);
+  position: relative;
+  overflow: hidden;
+}
+
+.create-project-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: all 0.6s ease;
+}
+
+.create-project-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 15px 30px rgba(148, 213, 0, 0.4);
+}
+
+.create-project-btn:hover::before {
+  left: 100%;
+}
+
+.instruction-text {
+  color: rgba(255, 255, 255, 0.5);
+  font-style: italic;
+  font-size: 1.3rem;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+/* Decorative elements */
+.decoration {
+  position: absolute;
+  z-index: -1;
+}
+
+.decoration-circle {
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(148, 213, 0, 0.15) 0%, transparent 70%);
+  position: absolute;
+  top: 10%;
+  right: 5%;
+}
+
+.decoration-circle-2 {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(231, 76, 60, 0.15) 0%, transparent 70%);
+  position: absolute;
+  bottom: 20%;
+  left: 5%;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .attendance-header h1 {
+    font-size: 2.9rem;
+  }
+
+  .attendance-header p {
+    font-size: 2.3rem;
+  }
+
+  .feature-card h2{
+    font-size: 2.0rem;
+  }
+  
+  .feature-card {
+    min-width: 250px;
+  }
+}
+
+@media (max-width: 768px) {
+  .features-container {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .feature-card {
+    min-width: 100%;
+    max-width: 100%;
+  }
+  
+   .attendance-header h1 {
+    font-size: 3.2rem;
+  }
+
+  .attendance-header p {
+    font-size: 2.0rem;
+  }
+
+  .feature-card h2 {
+    font-size: 1.9rem;
+  }
+
+  .feature-card p {
+    font-size: 1.6rem;
+  }
+  
+  .decoration-circle,
+  .decoration-circle-2 {
+    display: none;
+  }
+  
+  .get-started-section h2 {
+    font-size: 1.9rem;
+  }
+}
+
+/* Animation for the create button */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 10px 20px rgba(148, 213, 0, 0.25);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 15px 30px rgba(148, 213, 0, 0.4);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 10px 20px rgba(148, 213, 0, 0.25);
+  }
+}
+
+.create-project-btn {
+  animation: pulse 3s infinite;
+}
+
+.create-project-btn:hover {
+  animation: none;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(#94d500, #e74c3c);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(#82bc00, #c0392b);
+}

@@ -17,6 +17,24 @@ const All = () => {
             <div className="options-container">
               <div className="option-card">
                 <div className="option-icon learning-icon">
+                 <i className="fas fa-calendar-check"></i>
+                </div>
+                <h3>Attendance Portal</h3>
+                <p>
+                 Access, manage upstream field projects and track team attendance efficiently.
+                </p>
+                <Link to="/signin">
+                  <button className="primary-btnn">
+                    Log Attendance{" "}
+                    <i className="fa fa-long-arrow-alt-right"></i>
+                  </button>
+                </Link>
+              </div>
+
+
+
+              <div className="option-card">
+                <div className="option-icon learning-icon">
                   <i className="fas fa-book-open"></i>
                 </div>
                 <h3>Learning Portal</h3>

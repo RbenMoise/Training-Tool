@@ -1,0 +1,310 @@
+/* CreateProjectForm.css - Full Page Version with Header on Top */
+
+.create-project-page {
+  min-height: 100vh;
+  background: #000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+}
+
+/* Header positioned above the form */
+.page-header {
+  text-align: center;
+  padding: 10px 10px 10px;
+  width: 100%;
+  max-width: 700px;
+}
+
+.page-header h1 {
+  font-size: 42px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 20px;
+  letter-spacing: -0.5px;
+  background: linear-gradient(135deg, #94d500 0%, #e74c3c 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.page-header p {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 20px;
+  line-height: 1.5;
+  font-weight: 300;
+}
+
+.form-container {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 24px;
+  padding: 50px;
+  width: 100%;
+  max-width: 700px;
+  box-shadow: 
+    0 25px 50px rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(255, 255, 255, 0.1),
+    0 0 50px rgba(148, 213, 0, 0.1);
+  animation: formAppear 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  margin-bottom: 60px;
+  position: relative;
+  overflow: hidden;
+}
+
+.form-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: linear-gradient(90deg, #94d500, #e74c3c);
+}
+
+@keyframes formAppear {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Remove the header from inside the form */
+.form-header {
+  display: none;
+}
+
+.project-form {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.form-group label {
+  font-size: 16px;
+  font-weight: 600;
+  color: #000;
+  padding-left: 5px;
+}
+
+.modern-input, .modern-textarea {
+  padding: 18px 22px;
+  border-radius: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: rgba(255, 255, 255, 0.8);
+  font-size: 17px;
+  transition: all 0.25s ease;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
+  font-family: inherit;
+}
+
+.modern-input:focus, .modern-textarea:focus {
+  outline: none;
+  border-color: #94d500;
+  box-shadow: 
+    0 0 0 4px rgba(148, 213, 0, 0.15),
+    0 4px 12px rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.95);
+  transform: translateY(-2px);
+}
+
+.modern-textarea {
+  resize: vertical;
+  min-height: 120px;
+  line-height: 1.5;
+}
+
+.date-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 25px;
+}
+
+.form-actions {
+  display: flex;
+  gap: 20px;
+  justify-content: flex-end;
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.cancel-btn, .continue-btn {
+  padding: 12px 25px;
+  border-radius: 14px;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  border: none;
+  min-width: 140px;
+}
+
+.cancel-btn {
+  background: rgba(0, 0, 0, 0.06);
+  color: #666;
+}
+
+.cancel-btn:hover {
+  background: rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.continue-btn {
+  background: linear-gradient(135deg, #94d500 0%, #82bc00 100%);
+  color: white;
+  box-shadow: 0 5px 15px rgba(148, 213, 0, 0.3);
+}
+
+.continue-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(148, 213, 0, 0.4);
+}
+
+.continue-btn:active {
+  transform: translateY(0);
+}
+
+/* Custom date picker styling */
+input[type="date"] {
+  position: relative;
+  appearance: none;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: auto;
+  height: auto;
+  color: transparent;
+  background: transparent;
+  cursor: pointer;
+}
+
+input[type="date"]::after {
+  content: '';
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 22px;
+  height: 22px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23944d500'%3E%3Cpath d='M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  pointer-events: none;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .create-project-page {
+    padding: 0 15px;
+  }
+  
+  .page-header {
+    padding: 40px 20px 30px;
+  }
+  
+  .page-header h1 {
+    font-size: 32px;
+  }
+  
+  .page-header p {
+    font-size: 18px;
+  }
+  
+  .form-container {
+    padding: 30px 25px;
+    margin-bottom: 40px;
+    border-radius: 20px;
+  }
+  
+  .date-row {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .cancel-btn, .continue-btn {
+    width: 100%;
+    min-width: auto;
+  }
+  
+  .modern-input, .modern-textarea {
+    padding: 16px 18px;
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-header {
+    padding: 30px 15px 25px;
+  }
+  
+  .page-header h1 {
+    font-size: 28px;
+  }
+  
+  .page-header p {
+    font-size: 16px;
+  }
+  
+  .form-container {
+    padding: 25px 20px;
+  }
+}
+
+/* Focus states for accessibility */
+.modern-input:focus-visible, 
+.modern-textarea:focus-visible,
+.cancel-btn:focus-visible,
+.continue-btn:focus-visible {
+  outline: 2px solid #94d500;
+  outline-offset: 2px;
+}
+
+/* Loading state for form submission */
+.continue-btn.loading {
+  position: relative;
+  color: transparent;
+}
+
+.continue-btn.loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 0.8s ease infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
