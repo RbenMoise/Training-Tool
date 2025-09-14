@@ -19,7 +19,7 @@ export const LogoutProvider = ({ children }) => {
         credentials: "include",
       });
       if (response.ok) {
-        navigate("/login");
+        navigate("/");
       }
     } catch (error) {
       console.error("Failed to logout:", error);
