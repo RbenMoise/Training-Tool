@@ -17,6 +17,17 @@ const projectSchema = new mongoose.Schema(
       type: Date,
       required: true,
     },
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "UserAtt",
+      required: true,
+    },
+    members: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "UserAtt",
+      },
+    ],
   },
   { timestamps: true }
 );

@@ -5,22 +5,28 @@ import "./CreateProjectForm.css";
 
 const CreateProjectForm = () => {
   const navigate = useNavigate();
+  const [error, setError] = useState(null);
+  const [isAsideBarVisible, setIsAsideBarVisible] = useState(false);
+
+  // Get user ID and token from localStorage
+  const authUserId = localStorage.getItem("userId");
+  const authToken = localStorage.getItem("authToken");
 
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, []);
+    // Redirect to signin if not authenticated
+    if (!authUserId || !authToken) {
+      navigate("/signin");
+    }
+  }, [navigate, authUserId, authToken]);
 
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     startDate: "",
     endDate: "",
+    createdBy: authUserId || "", // Use real user ID
   });
-
-  const [isAsideBarVisible, setIsAsideBarVisible] = useState(false);
-  const handleAsideBarToggle = () => {
-    setIsAsideBarVisible(!isAsideBarVisible);
-  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -37,20 +43,37 @@ const CreateProjectForm = () => {
 
   const handleProjectSubmit = async (e) => {
     e.preventDefault();
+    setError(null);
+
+    if (!authUserId || !authToken) {
+      setError("You must be logged in to create a project");
+      navigate("/signin");
+      return;
+    }
 
     try {
       const res = await fetch("/att/auth/projects", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authToken}`,
+        },
         body: JSON.stringify(formData),
       });
 
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(
+          errorData.message || `HTTP error! status: ${res.status}`
+        );
+      }
+
       const data = await res.json();
       console.log("✅ Project Saved:", data);
-
-      navigate("/teamselection");
+      navigate(`/teamselection/${data.project._id}`);
     } catch (error) {
       console.error("❌ Error saving project:", error);
+      setError(error.message);
     }
   };
 
@@ -58,7 +81,7 @@ const CreateProjectForm = () => {
     <>
       <AsideBar
         isAsideBarVisible={isAsideBarVisible}
-        handleAsideBarToggle={handleAsideBarToggle}
+        handleAsideBarToggle={() => setIsAsideBarVisible(!isAsideBarVisible)}
       />
 
       <div className="create-project-page">

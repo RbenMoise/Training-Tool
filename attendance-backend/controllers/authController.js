@@ -6,6 +6,7 @@ export const registerUser = async (req, res) => {
   const { fullName, email, password, role, department, employeeId } = req.body;
 
   try {
+    console.log("Register request body:", req.body);
     const userExists = await User.findOne({ email });
     if (userExists) {
       return res.status(400).json({ message: "User already exists" });
@@ -14,13 +15,13 @@ export const registerUser = async (req, res) => {
     const user = await User.create({
       fullName,
       email,
-      password,
+      password, // Stored as plain text
       role,
       department,
       employeeId,
     });
 
-    res.status(201).json({
+    const response = {
       _id: user._id,
       fullName: user.fullName,
       email: user.email,
@@ -28,8 +29,11 @@ export const registerUser = async (req, res) => {
       department: user.department,
       employeeId: user.employeeId,
       token: generateToken(user._id),
-    });
+    };
+    console.log("Register response:", response);
+    res.status(201).json(response);
   } catch (error) {
+    console.error("Register error:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
@@ -43,15 +47,16 @@ export const loginUser = async (req, res) => {
     const user = await User.findOne({ email });
 
     if (!user) {
+      console.log("Login failed: User not found for email:", email);
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    // Plain password check (⚠️ insecure, but works for demo)
     if (user.password !== password) {
+      console.log("Login failed: Incorrect password for email:", email);
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    res.json({
+    const response = {
       message: "Login successful",
       _id: user._id,
       fullName: user.fullName,
@@ -60,7 +65,9 @@ export const loginUser = async (req, res) => {
       department: user.department,
       employeeId: user.employeeId,
       token: generateToken(user._id),
-    });
+    };
+    console.log("Login response:", response);
+    res.json(response);
   } catch (err) {
     console.error("Login error:", err);
     res.status(500).json({ message: "Server error", error: err.message });

@@ -1,14 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import {
-  Mail,
-  Lock,
-  Eye,
-  EyeOff,
-  User,
-  Building,
-  AlertCircle,
-} from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, AlertCircle } from "lucide-react";
 import "./SignIn.css";
 import axios from "axios";
 
@@ -31,7 +23,6 @@ const SignIn = () => {
       [name]: type === "checkbox" ? checked : value,
     }));
 
-    // Clear errors when user starts typing
     if (errors[name]) {
       setErrors((prev) => ({
         ...prev,
@@ -70,21 +61,26 @@ const SignIn = () => {
     setLoginError("");
 
     try {
-      // Call backend API
       const response = await axios.post("/att/auth/login", formData, {
         withCredentials: true,
       });
 
-      console.log("Login successful:", response.data);
+      console.log("Login response:", response.data);
 
-      // Save token or user info in localStorage
+      // Always save userId and authToken for session
+      localStorage.setItem("authToken", response.data.token);
+      localStorage.setItem("userId", response.data._id);
+
+      // Save email and rememberMe only if checked
       if (formData.rememberMe) {
         localStorage.setItem("rememberMe", "true");
         localStorage.setItem("userEmail", formData.email);
-        localStorage.setItem("authToken", response.data.token);
+      } else {
+        localStorage.removeItem("rememberMe");
+        localStorage.removeItem("userEmail");
       }
 
-      navigate("/homeAttendance"); // redirect after login
+      navigate("/homeAttendance");
     } catch (error) {
       console.error("Login error:", error);
       setLoginError(
@@ -95,17 +91,11 @@ const SignIn = () => {
     }
   };
 
-  //   const togglePasswordVisibility = () => {
-  //     setShowPassword(!showPassword);
-  //   };
-
   const handleForgotPassword = () => {
-    // Navigate to forgot password page
     navigate("/forgot-password");
   };
 
-  // Pre-fill email if remember me was checked previously
-  React.useEffect(() => {
+  useEffect(() => {
     const remembered = localStorage.getItem("rememberMe");
     const savedEmail = localStorage.getItem("userEmail");
 
@@ -178,13 +168,13 @@ const SignIn = () => {
                   className={errors.password ? "error" : ""}
                   autoComplete="current-password"
                 />
-                {/* <button
+                <button
                   type="button"
-                  onClick={togglePasswordVisibility}
+                  onClick={() => setShowPassword(!showPassword)}
                   className="password-toggle"
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button> */}
+                </button>
               </div>
               {errors.password && (
                 <span className="error-message">{errors.password}</span>
