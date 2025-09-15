@@ -1,251 +1,387 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { X, Plus, Calendar, User, Trash2, CheckCircle } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { X, CheckCircle, User, Calendar } from "lucide-react";
 import AsideBar from "../../components/attendanceSidebar/AttendanceSidebar";
-import './RecordAttendance.css';
+import "./RecordAttendance.css";
 
 const RecordAttendance = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const projectId = location.state?.projectId;
+  const authToken = localStorage.getItem("authToken");
+  const authUserId = localStorage.getItem("userId");
   const [isAsideBarVisible, setIsAsideBarVisible] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
-  const [staffNumber, setStaffNumber] = useState('');
-  const [attendanceList, setAttendanceList] = useState([]);
-  const [error, setError] = useState('');
+  const [project, setProject] = useState(null);
+  const [teamMembers, setTeamMembers] = useState([]);
+  const [attendance, setAttendance] = useState({});
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const today = new Date().toISOString().split("T")[0];
 
-
-  // Scroll to top on component mount
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, []);
+    console.log("RecordAttendance: Checking projectId and auth", {
+      projectId,
+      authToken,
+      authUserId,
+    });
 
-  // Sample team members data
-  const teamMembers = [
-    { id: 1, name: 'Lorna Sapit', empId: 'EMP011', department: 'Geochemistry' },
-    { id: 2, name: 'Helen Sonkoi', empId: 'EMP010', department: 'Geophysics' },
-    { id: 3, name: 'Lemiso Koiyo', empId: 'EMP012', department: 'Engineering' },
-    { id: 4, name: 'Andrew Metamel', empId: 'EMP008', department: 'Geophysics' },
-    { id: 5, name: 'Lucy Obwongo', empId: 'EMP014', department: 'Engineering' }
-  ];
+    if (!projectId) {
+      console.log("RecordAttendance: No projectId in location.state");
+      setError("No project selected. Please select a project first.");
+      navigate("/homeAttendance");
+      return;
+    }
+
+    if (!authToken || !authUserId) {
+      console.log("RecordAttendance: Redirecting to /signin");
+      navigate("/signin", { state: { from: "/recordattendance" } });
+      return;
+    }
+
+    // Fetch project details and team members
+    const fetchProject = async () => {
+      setIsLoading(true);
+      try {
+        console.log(
+          "RecordAttendance: Fetching project details for projectId:",
+          projectId
+        );
+        const res = await fetch("/att/auth/projects/details", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authToken}`,
+          },
+          body: JSON.stringify({ projectId }),
+        });
+        if (!res.ok) {
+          const errorData = await res.json();
+          console.error(
+            "RecordAttendance: Fetch project error response",
+            errorData
+          );
+          throw new Error(
+            errorData.message || `HTTP error! status: ${res.status}`
+          );
+        }
+        const data = await res.json();
+        console.log("RecordAttendance: Project fetched", data);
+        setProject(data);
+        const members = data.members.map((member, index) => ({
+          id: index + 1,
+          _id: member._id,
+          name: member.fullName,
+          empId: member.employeeId,
+          department: member.department || "Unknown",
+        }));
+        setTeamMembers(members);
+        // Initialize attendance state
+        setAttendance(
+          members.reduce(
+            (acc, member) => ({
+              ...acc,
+              [member._id]: { present: false },
+            }),
+            {}
+          )
+        );
+      } catch (err) {
+        console.error("RecordAttendance: Error fetching project", err);
+        setError(
+          err.message || "Failed to load project details. Please try again."
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    // Fetch existing attendance for today
+    const fetchTodayAttendance = async () => {
+      try {
+        console.log(
+          "RecordAttendance: Fetching today's attendance for projectId:",
+          projectId
+        );
+        const res = await fetch("/att/auth/projects/attendance", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authToken}`,
+          },
+          body: JSON.stringify({ projectId }),
+        });
+        if (!res.ok) {
+          const errorData = await res.json();
+          console.error(
+            "RecordAttendance: Fetch attendance error response",
+            errorData
+          );
+          throw new Error(
+            errorData.message || `HTTP error! status: ${res.status}`
+          );
+        }
+        const data = await res.json();
+        console.log("RecordAttendance: Today's attendance fetched", data);
+        const todayRecord = data.find(
+          (record) =>
+            new Date(record.date).toISOString().split("T")[0] === today
+        );
+        if (todayRecord) {
+          const updatedAttendance = {};
+          teamMembers.forEach((member) => {
+            const record = todayRecord.attendance.find(
+              (a) => a.userId.toString() === member._id
+            );
+            updatedAttendance[member._id] = {
+              present: record?.present || false,
+            };
+          });
+          setAttendance(updatedAttendance);
+        }
+      } catch (err) {
+        console.error(
+          "RecordAttendance: Error fetching today's attendance",
+          err
+        );
+        setError(
+          err.message || "Failed to load today's attendance. Please try again."
+        );
+      }
+    };
+
+    fetchProject();
+    if (teamMembers.length > 0) fetchTodayAttendance();
+  }, [projectId, authToken, authUserId, navigate, teamMembers.length]);
 
   const handleAsideBarToggle = () => {
     setIsAsideBarVisible(!isAsideBarVisible);
   };
 
-
-
   const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      month: 'long', 
-      day: 'numeric', 
-      year: 'numeric' 
+    return new Date(dateString).toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
     });
   };
 
-  const handleAddStaff = () => {
-    setError('');
-    
-    if (!staffNumber.trim()) {
-      setError('Please enter a staff number');
+  const toggleAttendance = (userId) => {
+    setAttendance((prev) => ({
+      ...prev,
+      [userId]: { present: !prev[userId].present },
+    }));
+  };
+
+  const handleRecordAttendance = async () => {
+    if (Object.values(attendance).every((status) => !status.present)) {
+      setError("Please mark at least one team member as present.");
       return;
     }
 
-    const staffId = staffNumber.trim().toUpperCase();
-    const employee = teamMembers.find(member => member.empId === staffId);
-    
-    if (!employee) {
-      setError('Staff number not found');
-      return;
+    setIsLoading(true);
+    setError("");
+    try {
+      const attendanceData = Object.entries(attendance).map(
+        ([userId, status]) => ({
+          userId,
+          present: status.present,
+        })
+      );
+      console.log("RecordAttendance: Submitting attendance", {
+        projectId,
+        date: today,
+        attendance: attendanceData,
+      });
+      const res = await fetch("/att/auth/projects/attendance", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authToken}`,
+        },
+        body: JSON.stringify({
+          projectId,
+          date: today,
+          attendance: attendanceData,
+        }),
+      });
+      if (!res.ok) {
+        const errorData = await res.text(); // Use text() to capture raw response
+        console.error(
+          "RecordAttendance: Save attendance error response",
+          errorData
+        );
+        throw new Error(
+          `HTTP error! status: ${res.status}, response: ${errorData}`
+        );
+      }
+      const data = await res.json();
+      console.log("RecordAttendance: Attendance recorded", data);
+      setShowConfirmModal(false);
+      alert(
+        `Attendance recorded for ${
+          attendanceData.filter((a) => a.present).length
+        } team members on ${formatDate(today)}`
+      );
+      navigate(-1);
+    } catch (err) {
+      console.error("RecordAttendance: Error recording attendance", err);
+      setError(err.message || "Failed to record attendance. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
-
-    if (attendanceList.some(item => item.empId === staffId)) {
-      setError('Staff member already added');
-      return;
-    }
-
-    setAttendanceList(prev => [...prev, employee]);
-    setStaffNumber('');
   };
 
-  const handleRemoveStaff = (empId) => {
-    setAttendanceList(prev => prev.filter(item => item.empId !== empId));
-  };
-
-  const handleClearAll = () => {
-    setAttendanceList([]);
-    setStaffNumber('');
-    setError('');
-  };
-
-  const handleRecordAttendance = () => {
-    if (attendanceList.length === 0) {
-      setError('Please add at least one staff member');
-      return;
-    }
-
-    // Here you would typically make an API call to record attendance
-    console.log('Recording attendance for:', {
-      date: selectedDate,
-      attendees: attendanceList
-    });
-
-    // Show success message and navigate back
-    alert(`Attendance recorded for ${attendanceList.length} team members`);
-    navigate(-1);
-  };
-
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
-      handleAddStaff();
-    }
-  };
+  const presentCount = Object.values(attendance).filter(
+    (status) => status.present
+  ).length;
+  const attendanceRate =
+    teamMembers.length > 0
+      ? Math.round((presentCount / teamMembers.length) * 100)
+      : 0;
 
   return (
-<>
- <AsideBar isAsideBarVisible={isAsideBarVisible} handleAsideBarToggle={handleAsideBarToggle} />
-
-
-    <div className="record-attendance">
-      <div className="recordattendance-header">
-        <div className="recordheader-content">
-          <h1>Record Attendance</h1>
-          <div className="recordproject-period">
-            <strong>September 9, 2025 - September 13, 2025</strong>
-            
+    <>
+      <AsideBar
+        isAsideBarVisible={isAsideBarVisible}
+        handleAsideBarToggle={handleAsideBarToggle}
+      />
+      <div className="record-attendance">
+        {isLoading && (
+          <div className="record-loading-overlay">
+            <div className="record-spinner"></div>
           </div>
-        </div>
-      </div>
-
-      <div className="recordattendance-content">
-        <div className="recordmain-section">
-          <div className="recordmark-attendance-card">
-            <div className="recordsection-header">
-              <h2>Mark Attendance</h2>
-            </div>
-
-            <div className="recordinput-group">
-              <label htmlFor="date">Select Date</label>
-              <div className="recorddate-input">
-                {/* <Calendar size={18} /> */}
-                <input
-                  type="date"
-                  id="date"
-                  value={selectedDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                  className="recordmodern-input"
-                />
-              </div>
-            </div>
-
-            <div className="recordinput-group">
-              <label htmlFor="staffNumber">Enter Staff Number</label>
-              <div className="recordstaff-input">
-                <input
-                  type="text"
-                  id="staffNumber"
-                  value={staffNumber}
-                  onChange={(e) => setStaffNumber(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder="e.g., EMP001"
-                  className="recordmodern-input"
-                />
-                <button onClick={handleAddStaff} className="recordadd-button">
-                  <Plus size={16} />
-                  Add
+        )}
+        {showConfirmModal && (
+          <div className="record-modal">
+            <div className="record-modal-content">
+              <h3>Confirm Attendance</h3>
+              <p>
+                Record attendance for {presentCount} of {teamMembers.length}{" "}
+                team members as present on {formatDate(today)}?
+              </p>
+              <div className="record-modal-actions">
+                <button
+                  className="record-button record-button-cancel"
+                  onClick={() => setShowConfirmModal(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="record-button"
+                  onClick={handleRecordAttendance}
+                  disabled={isLoading}
+                >
+                  Confirm
                 </button>
               </div>
-              {error && <div className="recorderror-message">{error}</div>}
             </div>
+          </div>
+        )}
+        <div className="recordattendance-header">
+          <div className="recordheader-content">
+            <h1>Record Attendance</h1>
+            <div className="recordproject-period">
+              <strong>{project?.name || "Loading..."}</strong>
+              <p>
+                {project
+                  ? `${formatDate(project.startDate)} - ${formatDate(
+                      project.endDate
+                    )}`
+                  : "Loading..."}
+              </p>
+              <p>
+                Recording attendance for <strong>{formatDate(today)}</strong>
+              </p>
+            </div>
+          </div>
+        </div>
 
-            {attendanceList.length > 0 && (
-              <div className="recordattendance-list-section">
-                <div className="recordlist-header">
-                  <h3>Adding to {formatDate(selectedDate)} ({attendanceList.length} employees)</h3>
-                  <button onClick={handleClearAll} className="recordclear-button">
-                    <Trash2 size={14} />
-                    Clear All
-                  </button>
+        <div className="recordattendance-content">
+          <div className="recordmain-section">
+            <div className="recordmark-attendance-card">
+              <div className="recordsection-header">
+                <h2>Mark Attendance for {formatDate(today)}</h2>
+              </div>
+              {error && <div className="recorderror-message">{error}</div>}
+              {teamMembers.length === 0 ? (
+                <div className="recordempty-state">
+                  <User size={24} />
+                  <p>No team members assigned to this project.</p>
                 </div>
-
+              ) : (
                 <div className="recordattendance-list">
-                  {attendanceList.map((employee, index) => (
-                    <div key={employee.empId} className="recordattendance-item">
+                  {teamMembers.map((member) => (
+                    <div key={member._id} className="recordattendance-item">
                       <div className="recordemployee-info">
-                        <div className="recordemployee-name">{employee.name}</div>
-                        <div className="recordemployee-id">{employee.empId}</div>
+                        <div className="recordemployee-name">{member.name}</div>
+                        <div className="recordemployee-id">
+                          {member.empId} • {member.department}
+                        </div>
                       </div>
-                      <button
-                        onClick={() => handleRemoveStaff(employee.empId)}
-                        className="recordremove-button"
-                      >
-                        <X size={16} />
-                      </button>
+                      <input
+                        type="checkbox"
+                        checked={attendance[member._id]?.present || false}
+                        onChange={() => toggleAttendance(member._id)}
+                        className="record-checkbox"
+                      />
                     </div>
                   ))}
                 </div>
-              </div>
-            )}
-          </div>
-
-          <div className="recordsummary-card">
-            <div className="recordsection-header">
-              <h2>{formatDate(selectedDate)} Summary</h2>
+              )}
             </div>
 
-            <div className="recordsummary-stats">
-              <div className="recordstat-item">
-                <div className="recordstat-label">Team Size</div>
-                <div className="recordstat-value">{teamMembers.length}</div>
+            <div className="recordsummary-card">
+              <div className="recordsection-header">
+                <h2>Today's Summary</h2>
               </div>
-              <div className="recordstat-item">
-                <div className="recordstat-label">Attendance Rate</div>
-                <div className="recordstat-value">0%</div>
-              </div>
-            </div>
-
-            <div className="recordalready-present">
-              <h3>Already Present</h3>
-              <div className="recordpresent-list">
-                {/* This would show already recorded attendance for the selected date */}
-                <div className="recordempty-state">
-                  <CheckCircle size={24} />
-                  <p>No attendance recorded yet</p>
+              <div className="recordsummary-stats">
+                <div className="recordstat-item">
+                  <div className="recordstat-label">Team Size</div>
+                  <div className="recordstat-value">{teamMembers.length}</div>
+                </div>
+                <div className="recordstat-item">
+                  <div className="recordstat-label">Attendance Rate</div>
+                  <div className="recordstat-value">{attendanceRate}%</div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <div className="recordsidebar-section">
-          <div className="recordteam-overview-card">
-            <div className="recordsection-header">
-              <h2>Team Overview</h2>
-            </div>
-
-            <div className="recordteam-list">
-              {teamMembers.map((member) => (
-                <div key={member.empId} className="recordteam-member-item">
-                  <div className="projectmember-name">
-                    <User size={16} />
-                    {member.name}
+          <div className="recordsidebar-section">
+            <div className="recordteam-overview-card">
+              <div className="recordsection-header">
+                <h2>Team Overview</h2>
+              </div>
+              <div className="recordteam-list">
+                {teamMembers.map((member) => (
+                  <div key={member._id} className="recordteam-member-item">
+                    <div className="projectmember-name">
+                      <User size={16} />
+                      {member.name}
+                    </div>
+                    <div className="projectmember-id">{member.empId}</div>
                   </div>
-                  <div className="projectmember-id">{member.empId}</div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {attendanceList.length > 0 && (
-        <div className="recordfloating-action">
-          <button onClick={handleRecordAttendance} className="record-button">
-            <CheckCircle size={20} />
-            Record {attendanceList.length} Attendance{attendanceList.length !== 1 ? 's' : ''}
-          </button>
-        </div>
-      )}
-    </div>
+        {teamMembers.length > 0 && (
+          <div className="recordfloating-action">
+            <button
+              onClick={() => setShowConfirmModal(true)}
+              className="record-button"
+              disabled={isLoading}
+            >
+              <CheckCircle size={20} />
+              Record {presentCount} Attendance{presentCount !== 1 ? "s" : ""}
+            </button>
+          </div>
+        )}
+      </div>
     </>
   );
 };

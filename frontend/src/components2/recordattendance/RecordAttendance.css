@@ -4,7 +4,8 @@
   min-height: 100vh;
   background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
   color: #ffffff;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+    sans-serif;
   padding-bottom: 100px;
 }
 
@@ -77,6 +78,9 @@
   margin-bottom: 1.5rem;
   padding-bottom: 1rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .recordsection-header h2 {
@@ -86,131 +90,10 @@
   color: #ffffff;
 }
 
-.recordsection-header h3 {
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin: 0;
-  color: #ffffff;
-}
-
-.recordinput-group {
-  margin-bottom: 1.5rem;
-}
-
-.recordinput-group label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 1.4rem;
-}
-
-.recorddate-input,
-.recordstaff-input {
-  position: relative;
-  display: flex;
-  align-items: center;
-  
-}
-
-.recorddate-input .modern-input {
-  padding-left: 2.5rem;
-  font-size: 1.2rem;
-}
-
-.recordstaff-input {
-  gap: 0.5rem;
-}
-
-.recordstaff-input .modern-input {
-  flex: 1;
-   font-size: 1.2rem;
-}
-
-.recordmodern-input {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.1);
-  color: #ffffff;
-
-  transition: all 0.3s ease;
-}
-
-.recordmodern-input:focus {
-  outline: none;
-  border-color: #94d500;
-  box-shadow: 0 0 0 3px rgba(148, 213, 0, 0.2);
-  background: rgba(255, 255, 255, 0.15);
-}
-
-.recorddate-input svg {
-  position: absolute;
-  left: 1rem;
-  color: rgba(255, 255, 255, 0.7);
-  z-index: 1;
-}
-
-.recordadd-button {
-  padding: 0.75rem 1rem;
-  background: linear-gradient(135deg, #94d500, #82bc00);
-  color: white;
-  border: none;
-  border-radius: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: all 0.3s ease;
-  white-space: nowrap;
-}
-
-.recordadd-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(148, 213, 0, 0.3);
-}
-
 .recorderror-message {
   color: #e74c3c;
   font-size: 1.3rem;
   margin-top: 0.5rem;
-}
-
-.recordattendance-list-section {
-  margin-top: 2rem;
-}
-
-.recordlist-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
-.recordlist-header h3 {
-  color: #94d500;
-  margin: 0;
-   font-size: 1.5rem;
-}
-
-.recordclear-button {
-  background: rgba(231, 76, 60, 0.2);
-  color: #e74c3c;
-  border: 1px solid rgba(231, 76, 60, 0.3);
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  font-size: 1.1rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: all 0.3s ease;
-}
-
-.recordclear-button:hover {
-  background: rgba(231, 76, 60, 0.3);
 }
 
 .recordattendance-list {
@@ -243,7 +126,7 @@
 .recordemployee-name {
   font-weight: 600;
   color: #ffffff;
-   font-size: 1.4rem;
+  font-size: 1.4rem;
 }
 
 .recordemployee-id {
@@ -251,18 +134,11 @@
   color: rgba(255, 255, 255, 0.7);
 }
 
-.recordremove-button {
-  background: rgba(231, 76, 60, 0.2);
-  color: #e74c3c;
-  border: none;
-  border-radius: 6px;
-  padding: 0.5rem;
+.record-checkbox {
+  width: 20px;
+  height: 20px;
+  accent-color: #94d500;
   cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.recordremove-button:hover {
-  background: rgba(231, 76, 60, 0.3);
 }
 
 .recordsummary-stats {
@@ -291,12 +167,6 @@
   color: #94d500;
 }
 
-.recordalready-present h3 {
-  color: #94d500;
-  margin-bottom: 1rem;
-   font-size: 1.5rem;
-}
-
 .recordempty-state {
   text-align: center;
   padding: 2rem;
@@ -304,7 +174,7 @@
 }
 
 .recordempty-state p {
-font-size: 1.5rem;
+  font-size: 1.5rem;
 }
 
 .recordempty-state svg {
@@ -373,12 +243,90 @@ font-size: 1.5rem;
   box-shadow: 0 12px 40px rgba(148, 213, 0, 0.4);
 }
 
+.record-button:disabled {
+  background: linear-gradient(135deg, #666666, #555555);
+  cursor: not-allowed;
+}
+
+.record-button-cancel {
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
+}
+
+.record-loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.record-spinner {
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-top: 4px solid #94d500;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+}
+
+.record-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.record-modal-content {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  border-radius: 16px;
+  padding: 2rem;
+  max-width: 500px;
+  width: 90%;
+  text-align: center;
+}
+
+.record-modal-content h3 {
+  font-size: 1.7rem;
+  margin-bottom: 1rem;
+}
+
+.record-modal-content p {
+  font-size: 1.1rem;
+  margin-bottom: 2rem;
+}
+
+.record-modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
 /* Responsive Design */
 @media (max-width: 968px) {
   .recordattendance-content {
     grid-template-columns: 1fr;
   }
-  
   .recordsidebar-section {
     order: -1;
   }
@@ -389,31 +337,17 @@ font-size: 1.5rem;
   .recordattendance-content {
     padding: 1rem;
   }
-  
   .recordheader-content h1 {
     font-size: 2rem;
   }
-  
   .recordmark-attendance-card,
   .recordsummary-card,
   .recordteam-overview-card {
     padding: 1.5rem;
   }
-  
-  .recordstaff-input {
-    flex-direction: column;
-  }
-  
   .recordsummary-stats {
     grid-template-columns: 1fr;
   }
-  
-  .recordlist-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
-  }
-  
   .record-button {
     padding: 0.75rem 1.5rem;
     font-size: 1rem;
@@ -434,10 +368,7 @@ font-size: 1.5rem;
 
 .recordmark-attendance-card,
 .recordsummary-card,
-.recordteam-overview-card {
-  animation: slideInUp 0.6s ease;
-}
-
+.recordteam-overview-card,
 .recordattendance-item {
-  animation: slideInUp 0.4s ease;
+  animation: slideInUp 0.6s ease;
 }

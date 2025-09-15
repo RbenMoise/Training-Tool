@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import jwt from "jsonwebtoken";
 import Project from "../models/Project.js";
 import User from "../models/User.js";
+import Attendance from "../models/Attendance.js"; // Added import
 
 const router = express.Router();
 
@@ -71,11 +72,6 @@ router.post("/", authMiddleware, async (req, res) => {
       return res.status(400).json({ message: "Invalid createdBy ID format" });
     }
 
-    if (!User) {
-      console.error("User model is not defined. Check the model import.");
-      throw new Error("User model is not defined. Check the model import.");
-    }
-
     console.log("Checking user existence for createdBy:", createdBy);
     const userExists = await User.findById(createdBy);
     if (!userExists) {
@@ -113,13 +109,6 @@ router.post("/", authMiddleware, async (req, res) => {
       const errors = Object.values(error.errors).map((err) => err.message);
       console.log("ValidationError:", errors);
       return res.status(400).json({ message: "Validation failed", errors });
-    }
-    if (error.name === "ReferenceError") {
-      console.error("ReferenceError in project creation:", error);
-      return res.status(500).json({
-        message: "Server error: Model not found",
-        error: error.message,
-      });
     }
     console.error("Error creating project:", error);
     res.status(500).json({
@@ -199,7 +188,7 @@ router.get("/", authMiddleware, async (req, res) => {
   try {
     const projects = await Project.find()
       .populate("createdBy", "fullName employeeId")
-      .populate("members", "fullName employeeId");
+      .populate("members", "fullName employeeId department");
     res.json(projects);
   } catch (error) {
     console.error("Error fetching projects:", error);
@@ -221,7 +210,7 @@ router.post("/details", authMiddleware, async (req, res) => {
     }
     const project = await Project.findById(projectId)
       .populate("createdBy", "fullName employeeId")
-      .populate("members", "fullName employeeId");
+      .populate("members", "fullName employeeId department");
     if (!project) {
       console.log("Project not found:", projectId);
       return res.status(404).json({ message: "Project not found" });
@@ -250,7 +239,7 @@ router.get("/:projectId", authMiddleware, async (req, res) => {
     }
     const project = await Project.findById(projectId)
       .populate("createdBy", "fullName employeeId")
-      .populate("members", "fullName employeeId");
+      .populate("members", "fullName employeeId department");
     if (!project) {
       console.log("Project not found:", projectId);
       return res.status(404).json({ message: "Project not found" });
@@ -260,6 +249,111 @@ router.get("/:projectId", authMiddleware, async (req, res) => {
     console.error("Error fetching project:", error);
     res.status(500).json({
       message: "Server error while fetching project",
+      error: error.message,
+    });
+  }
+});
+
+// @desc Save attendance records
+router.post("/attendance", authMiddleware, async (req, res) => {
+  console.log("POST /att/auth/projects/attendance: Received request", req.body);
+  try {
+    const { projectId, date, attendance } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(projectId)) {
+      console.log("Invalid projectId format:", projectId);
+      return res.status(400).json({ message: "Invalid project ID format" });
+    }
+
+    if (!date || !attendance || !Array.isArray(attendance)) {
+      console.log("Invalid request data:", { date, attendance });
+      return res
+        .status(400)
+        .json({ message: "Date and attendance array are required" });
+    }
+
+    const project = await Project.findById(projectId);
+    if (!project) {
+      console.log("Project not found:", projectId);
+      return res.status(404).json({ message: "Project not found" });
+    }
+
+    if (project.createdBy.toString() !== req.userId) {
+      console.log("Unauthorized: User is not the project creator", {
+        userId: req.userId,
+        createdBy: project.createdBy,
+      });
+      return res.status(403).json({
+        message: "Unauthorized: Only the project creator can record attendance",
+      });
+    }
+
+    for (const record of attendance) {
+      if (!mongoose.Types.ObjectId.isValid(record.userId)) {
+        console.log("Invalid userId format:", record.userId);
+        return res
+          .status(400)
+          .json({ message: `Invalid user ID format: ${record.userId}` });
+      }
+      if (!project.members.includes(record.userId)) {
+        console.log("User not in project:", record.userId);
+        return res
+          .status(400)
+          .json({ message: `User ${record.userId} is not a project member` });
+      }
+    }
+
+    const attendanceRecord = new Attendance({
+      projectId,
+      date: new Date(date),
+      attendance,
+    });
+
+    console.log("Saving attendance:", attendanceRecord);
+    await attendanceRecord.save();
+
+    res.json({
+      message: "Attendance recorded successfully",
+      attendance: attendanceRecord,
+    });
+  } catch (error) {
+    console.error("Error saving attendance:", error);
+    res.status(500).json({
+      message: "Server error while saving attendance",
+      error: error.message,
+    });
+  }
+});
+
+// @desc Fetch attendance records for a project
+router.post("/attendance", authMiddleware, async (req, res) => {
+  console.log(
+    "POST /att/auth/projects/attendance: Fetching attendance",
+    req.body
+  );
+  try {
+    const { projectId } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(projectId)) {
+      console.log("Invalid projectId format:", projectId);
+      return res.status(400).json({ message: "Invalid project ID format" });
+    }
+
+    const project = await Project.findById(projectId);
+    if (!project) {
+      console.log("Project not found:", projectId);
+      return res.status(404).json({ message: "Project not found" });
+    }
+
+    const attendanceRecords = await Attendance.find({ projectId }).populate(
+      "attendance.userId",
+      "fullName employeeId"
+    );
+    res.json(attendanceRecords);
+  } catch (error) {
+    console.error("Error fetching attendance:", error);
+    res.status(500).json({
+      message: "Server error while fetching attendance",
       error: error.message,
     });
   }
