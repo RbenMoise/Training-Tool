@@ -43,6 +43,10 @@ const TeamSelection = () => {
     // Fetch project details
     const fetchProject = async () => {
       try {
+        console.log(
+          "TeamSelection: Fetching project details for projectId:",
+          projectId
+        );
         const res = await fetch("/att/auth/projects/details", {
           method: "POST",
           headers: {
@@ -62,13 +66,16 @@ const TeamSelection = () => {
         setProject(data);
       } catch (err) {
         console.error("TeamSelection: Error fetching project", err);
-        setError(err.message);
+        setError(
+          err.message || "Failed to load project details. Please try again."
+        );
       }
     };
 
     // Fetch users
     const fetchUsers = async () => {
       try {
+        console.log("TeamSelection: Fetching users");
         const res = await fetch("/att/auth/projects/users", {
           headers: {
             Authorization: `Bearer ${authToken}`,
@@ -124,11 +131,13 @@ const TeamSelection = () => {
   const handleCreateProject = async () => {
     if (selectedMembers.length === 0) {
       setError("Please select at least one team member");
+      console.log("TeamSelection: No members selected");
       return;
     }
     if (
       !window.confirm(`Add ${selectedMembers.length} member(s) to the project?`)
     ) {
+      console.log("TeamSelection: User cancelled team selection");
       return;
     }
     setIsSubmitting(true);
@@ -150,14 +159,16 @@ const TeamSelection = () => {
 
       if (!res.ok) {
         const errorData = await res.json();
+        console.error("TeamSelection: Error response from server", errorData);
         throw new Error(
           errorData.message || `HTTP error! status: ${res.status}`
         );
       }
 
-      console.log("✅ Team members added");
+      const data = await res.json();
+      console.log("✅ Team members added:", data);
       window.scrollTo(0, 0);
-      navigate("/projectdashboard");
+      navigate("/projectdashboard", { state: { projectId } });
     } catch (error) {
       console.error("❌ Error adding team members:", error);
       setError(
