@@ -1,65 +1,171 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import AsideBar from "../../components/attendanceSidebar/AttendanceSidebar";
-import './TeamSelection.css';
+import "./TeamSelection.css";
 
 const TeamSelection = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const projectId = location.state?.projectId;
   const [selectedMembers, setSelectedMembers] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedDepartment, setSelectedDepartment] = useState('All Departments');
-
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedDepartment, setSelectedDepartment] =
+    useState("All Departments");
+  const [users, setUsers] = useState([]);
+  const [project, setProject] = useState(null);
+  const [error, setError] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isAsideBarVisible, setIsAsideBarVisible] = useState(false);
+  const authToken = localStorage.getItem("authToken");
+  const authUserId = localStorage.getItem("userId");
 
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, []);
+    console.log("TeamSelection: Checking projectId and auth", {
+      projectId,
+      authToken,
+      authUserId,
+    });
 
+    if (!projectId) {
+      console.log("TeamSelection: No projectId in location.state");
+      setError("No project selected. Please create a project first.");
+      navigate("/createprojectform");
+      return;
+    }
 
-  const [isAsideBarVisible, setIsAsideBarVisible] = useState(false);
-   const handleAsideBarToggle = () => {
-    setIsAsideBarVisible(!isAsideBarVisible);
-  };
+    if (!authToken || !authUserId) {
+      console.log("TeamSelection: Redirecting to /signin");
+      navigate("/signin", { state: { from: "/teamselection" } });
+      return;
+    }
 
+    // Fetch project details
+    const fetchProject = async () => {
+      try {
+        const res = await fetch("/att/auth/projects/details", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authToken}`,
+          },
+          body: JSON.stringify({ projectId }),
+        });
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(
+            errorData.message || `HTTP error! status: ${res.status}`
+          );
+        }
+        const data = await res.json();
+        console.log("TeamSelection: Project fetched", data);
+        setProject(data);
+      } catch (err) {
+        console.error("TeamSelection: Error fetching project", err);
+        setError(err.message);
+      }
+    };
 
+    // Fetch users
+    const fetchUsers = async () => {
+      try {
+        const res = await fetch("/att/auth/projects/users", {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
+        });
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(
+            errorData.message || `HTTP error! status: ${res.status}`
+          );
+        }
+        const data = await res.json();
+        console.log("TeamSelection: Users fetched", data);
+        setUsers(data);
+      } catch (err) {
+        console.error("TeamSelection: Error fetching users", err);
+        setError(
+          err.message || "Failed to load team members. Please try again."
+        );
+      }
+    };
 
+    fetchProject();
+    fetchUsers();
+  }, [projectId, authToken, authUserId, navigate]);
 
-
-  // Sample team members data
-  const teamMembers = [
-    { id: 1, name: 'Lemiso Koiyo', empId: 'EMP675', department: 'Engineering' },
-    { id: 2, name: 'Kathleen Asena', empId: 'EMP712', department: 'Geophysics' },
-    { id: 3, name: 'Lucy Obwongo', empId: 'EMP813', department: 'Engineering' },
-    { id: 4, name: 'Clara Orora', empId: 'EMP674', department: 'Geochemistry' },
-    { id: 5, name: 'Vanila Mwangi', empId: 'EMP1015', department: 'Geology' },
-    { id: 6, name: 'Sharon Rotich', empId: 'EMP916', department: 'Data Management' },
+  const departments = [
+    "All Departments",
+    ...new Set(users.map((user) => user.department).filter(Boolean)),
   ];
 
-  const departments = ['All Departments', 'Geophysics', 'Engineering', 'Geology', 'Data Management'];
-
-  const toggleMemberSelection = (memberId) => {
-    setSelectedMembers(prev => {
-      const isSelected = prev.includes(memberId);
+  const toggleMemberSelection = (userId) => {
+    setSelectedMembers((prev) => {
+      const isSelected = prev.includes(userId);
       if (isSelected) {
-        return prev.filter(id => id !== memberId);
+        return prev.filter((id) => id !== userId);
       } else {
-        return [...prev, memberId];
+        return [...prev, userId];
       }
     });
   };
 
-  const filteredMembers = teamMembers.filter(member => {
-    const matchesSearch = member.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         member.empId.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesDepartment = selectedDepartment === 'All Departments' || 
-                             member.department === selectedDepartment;
+  const filteredMembers = users.filter((user) => {
+    const matchesSearch =
+      user.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.employeeId?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesDepartment =
+      selectedDepartment === "All Departments" ||
+      user.department === selectedDepartment;
     return matchesSearch && matchesDepartment;
   });
 
-  const handleCreateProject = () => {
-    // Handle project creation with selected team
-    console.log('Creating project with team:', selectedMembers);
-    window.scrollTo(0, 0);
-    navigate('/projectdashboard');
+  const handleCreateProject = async () => {
+    if (selectedMembers.length === 0) {
+      setError("Please select at least one team member");
+      return;
+    }
+    if (
+      !window.confirm(`Add ${selectedMembers.length} member(s) to the project?`)
+    ) {
+      return;
+    }
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      console.log("TeamSelection: Submitting members", {
+        projectId,
+        members: selectedMembers,
+      });
+      const res = await fetch("/att/auth/projects/members", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authToken}`,
+        },
+        body: JSON.stringify({ projectId, members: selectedMembers }),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(
+          errorData.message || `HTTP error! status: ${res.status}`
+        );
+      }
+
+      console.log("✅ Team members added");
+      window.scrollTo(0, 0);
+      navigate("/projectdashboard");
+    } catch (error) {
+      console.error("❌ Error adding team members:", error);
+      setError(
+        error.message || "Failed to save team members. Please try again."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleBack = () => {
@@ -67,132 +173,161 @@ const TeamSelection = () => {
     navigate(-1);
   };
 
-
-
-
-
-
-
-
   return (
-
     <>
- <AsideBar isAsideBarVisible={isAsideBarVisible} handleAsideBarToggle={handleAsideBarToggle} />
+      <AsideBar
+        isAsideBarVisible={isAsideBarVisible}
+        handleAsideBarToggle={() => setIsAsideBarVisible(!isAsideBarVisible)}
+      />
 
-    <div className="team-selection-page">
-      <div className="page-headerteam">
-        <h1>Select Team</h1>
-        <div className="project-info">
-          <h2>Tinga</h2>
-          <p className="date-range">9/9/2025 - 9/13/2025</p>
-          <p className="project-description">Tinga field description goes here</p>
+      <div className="team-selection-page">
+        <div className="page-headerteam">
+          <h1>Select Team</h1>
+          <div className="project-info">
+            <h2>{project?.name || "Loading..."}</h2>
+            <p className="date-range">
+              {project
+                ? `${new Date(
+                    project.startDate
+                  ).toLocaleDateString()} - ${new Date(
+                    project.endDate
+                  ).toLocaleDateString()}`
+                : "Loading..."}
+            </p>
+            <p className="project-description">
+              {project?.description || "No description available"}
+            </p>
+          </div>
         </div>
-      </div>
 
-      <div className="content-container">
-        <div className="selection-section">
-          <div className="section-header">
-            <h2>Select Team Members</h2>
+        {error && (
+          <div
+            className="error-message"
+            style={{ color: "red", marginBottom: "1rem" }}
+          >
+            {error}
           </div>
+        )}
 
-          <div className="filters-container">
-            <div className="search-container">
-              <i className="fas fa-search"></i>
-              <input
-                type="text"
-                placeholder="Search by name or staff number..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="search-input"
-              />
+        <div className="content-container">
+          <div className="selection-section">
+            <div className="section-header">
+              <h2>Select Team Members</h2>
             </div>
 
-            <div className="department-container">
-              <select
-                value={selectedDepartment}
-                onChange={(e) => setSelectedDepartment(e.target.value)}
-                className="department-select"
-              >
-                {departments.map(dept => (
-                  <option key={dept} value={dept}>{dept}</option>
-                ))}
-              </select>
-            </div>
-          </div>
+            <div className="filters-container">
+              <div className="search-container">
+                <i className="fas fa-search"></i>
+                <input
+                  type="text"
+                  placeholder="Search by name or staff number..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="search-input"
+                />
+              </div>
 
-          <div className="team-section">
-            
-            <div className="members-grid">
-              {filteredMembers.map(member => (
-                <div 
-                  key={member.id} 
-                  className={`member-card ${selectedMembers.includes(member.id) ? 'selected' : ''}`}
-                  onClick={() => toggleMemberSelection(member.id)}
+              <div className="department-container">
+                <select
+                  value={selectedDepartment}
+                  onChange={(e) => setSelectedDepartment(e.target.value)}
+                  className="department-select"
                 >
-                  <div className="member-details">
-                    <h4>{member.name}</h4>
-                    <p>{member.empId} - {member.department}</p>
-                  </div>
-                  <div className="member-action">
-                    {selectedMembers.includes(member.id) ? (
-                      <i className="fas fa-check-circle selected-icon"></i>
-                    ) : (
-                      <button className="add-button">+ Add</button>
-                    )}
-                  </div>
-                </div>
-              ))}
+                  {departments.map((dept) => (
+                    <option key={dept} value={dept}>
+                      {dept}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
-          </div>
-        </div>
 
-        <div className="selected-section">
-          <div className="selected-header">
-            <h3>Selected Team</h3>
-            <span className="count-badge">{selectedMembers.length}</span>
-          </div>
-          
-          {selectedMembers.length === 0 ? (
-            <div className="empty-state">
-              <i className="fas fa-users"></i>
-              <p>No team members selected yet</p>
-            </div>
-          ) : (
-            <div className="selected-list">
-              {teamMembers
-                .filter(member => selectedMembers.includes(member.id))
-                .map(member => (
-                  <div key={member.id} className="selected-item">
-                    <div className="selected-info">
-                      <span className="member-name">{member.name}</span>
-                      <span className="member-details">{member.department}</span>
-                    </div>
-                    <button 
-                      onClick={() => toggleMemberSelection(member.id)}
-                      className="remove-btn"
+            <div className="team-section">
+              <div className="members-grid">
+                {filteredMembers.length === 0 ? (
+                  <p>
+                    {users.length === 0
+                      ? "Loading team members..."
+                      : "No users found"}
+                  </p>
+                ) : (
+                  filteredMembers.map((user) => (
+                    <div
+                      key={user._id}
+                      className={`member-card ${
+                        selectedMembers.includes(user._id) ? "selected" : ""
+                      }`}
+                      onClick={() => toggleMemberSelection(user._id)}
                     >
-                      <i className="fas fa-times"></i>
-                    </button>
-                  </div>
-                ))}
+                      <div className="member-details">
+                        <h4>{user.fullName}</h4>
+                        <p>
+                          {user.employeeId} - {user.department}
+                        </p>
+                      </div>
+                      <div className="member-action">
+                        {selectedMembers.includes(user._id) ? (
+                          <i className="fas fa-check-circle selected-icon"></i>
+                        ) : (
+                          <button className="add-button">+ Add</button>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
-          )}
+          </div>
+
+          <div className="selected-section">
+            <div className="selected-header">
+              <h3>Selected Team</h3>
+              <span className="count-badge">{selectedMembers.length}</span>
+            </div>
+
+            {selectedMembers.length === 0 ? (
+              <div className="empty-state">
+                <i className="fas fa-users"></i>
+                <p>No team members selected yet</p>
+              </div>
+            ) : (
+              <div className="selected-list">
+                {users
+                  .filter((user) => selectedMembers.includes(user._id))
+                  .map((user) => (
+                    <div key={user._id} className="selected-item">
+                      <div className="selected-info">
+                        <span className="member-name">{user.fullName}</span>
+                        <span className="member-details">
+                          {user.department}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => toggleMemberSelection(user._id)}
+                        className="remove-btn"
+                      >
+                        <i className="fas fa-times"></i>
+                      </button>
+                    </div>
+                  ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="action-buttons">
+          <button onClick={handleBack} className="back-button">
+            Back to Project Details
+          </button>
+          <button
+            onClick={handleCreateProject}
+            className="create-button"
+            disabled={selectedMembers.length === 0 || isSubmitting}
+          >
+            {isSubmitting ? "Saving..." : "Save Team"}
+          </button>
         </div>
       </div>
-
-      <div className="action-buttons">
-        <button onClick={handleBack} className="back-button">
-          Back to Project Details
-        </button>
-        <button 
-          onClick={handleCreateProject} 
-          className="create-button"
-          disabled={selectedMembers.length === 0}
-        >
-          Create Project
-        </button>
-      </div>
-    </div>
     </>
   );
 };

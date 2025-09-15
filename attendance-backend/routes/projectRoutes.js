@@ -2,7 +2,7 @@ import express from "express";
 import mongoose from "mongoose";
 import jwt from "jsonwebtoken";
 import Project from "../models/Project.js";
-import User from "../models/User.js"; // Updated to User.js
+import User from "../models/User.js";
 
 const router = express.Router();
 
@@ -20,7 +20,7 @@ const authMiddleware = (req, res, next) => {
       process.env.JWT_SECRET || "your_jwt_secret"
     );
     console.log("Auth Middleware: Token decoded", decoded);
-    req.userId = decoded.userId; // Assume token contains userId
+    req.userId = decoded.userId;
     next();
   } catch (error) {
     console.log("Auth Middleware: Invalid token", error);
@@ -28,13 +28,31 @@ const authMiddleware = (req, res, next) => {
   }
 };
 
+// @desc Get all users (for team selection)
+router.get("/users", authMiddleware, async (req, res) => {
+  console.log("GET /att/auth/projects/users: Fetching users");
+  try {
+    const users = await User.find({}, "fullName employeeId department");
+    if (!users || users.length === 0) {
+      console.log("No users found");
+      return res.status(404).json({ message: "No users found" });
+    }
+    res.json(users);
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    res.status(500).json({
+      message: "Server error while fetching users",
+      error: error.message,
+    });
+  }
+});
+
 // @desc Create new project
 router.post("/", authMiddleware, async (req, res) => {
   console.log("POST /att/auth/projects: Received request", req.body);
   try {
     const { name, description, startDate, endDate, createdBy } = req.body;
 
-    // Validate required fields
     if (!name || !startDate || !endDate || !createdBy) {
       console.log("Validation failed: Missing required fields", {
         name,
@@ -48,19 +66,16 @@ router.post("/", authMiddleware, async (req, res) => {
       });
     }
 
-    // Validate createdBy is a valid ObjectId
     if (!mongoose.Types.ObjectId.isValid(createdBy)) {
       console.log("Validation failed: Invalid createdBy ID format", createdBy);
       return res.status(400).json({ message: "Invalid createdBy ID format" });
     }
 
-    // Check if User model is available
     if (!User) {
       console.error("User model is not defined. Check the model import.");
       throw new Error("User model is not defined. Check the model import.");
     }
 
-    // Check if createdBy user exists
     console.log("Checking user existence for createdBy:", createdBy);
     const userExists = await User.findById(createdBy);
     if (!userExists) {
@@ -70,7 +85,6 @@ router.post("/", authMiddleware, async (req, res) => {
         .json({ message: "User with provided createdBy ID does not exist" });
     }
 
-    // Ensure createdBy matches authenticated user
     if (createdBy !== req.userId) {
       console.log("Unauthorized: createdBy does not match authenticated user", {
         createdBy,
@@ -196,16 +210,56 @@ router.get("/", authMiddleware, async (req, res) => {
   }
 });
 
-// @desc Get all users (for team selection)
-router.get("/users", authMiddleware, async (req, res) => {
-  console.log("GET /att/auth/users: Fetching users");
+// @desc Get project details by ID (in body)
+router.post("/details", authMiddleware, async (req, res) => {
+  console.log("POST /att/auth/projects/details: Received request", req.body);
   try {
-    const users = await User.find({}, "fullName employeeId department");
-    res.json(users);
+    const { projectId } = req.body;
+    if (!mongoose.Types.ObjectId.isValid(projectId)) {
+      console.log("Invalid projectId format:", projectId);
+      return res.status(400).json({ message: "Invalid project ID format" });
+    }
+    const project = await Project.findById(projectId)
+      .populate("createdBy", "fullName employeeId")
+      .populate("members", "fullName employeeId");
+    if (!project) {
+      console.log("Project not found:", projectId);
+      return res.status(404).json({ message: "Project not found" });
+    }
+    res.json(project);
   } catch (error) {
-    console.error("Error fetching users:", error);
+    console.error("Error fetching project:", error);
     res.status(500).json({
-      message: "Server error while fetching users",
+      message: "Server error while fetching project",
+      error: error.message,
+    });
+  }
+});
+
+// @desc Get single project (for compatibility)
+router.get("/:projectId", authMiddleware, async (req, res) => {
+  console.log(
+    "GET /att/auth/projects/:projectId: Fetching project",
+    req.params
+  );
+  try {
+    const { projectId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(projectId)) {
+      console.log("Invalid projectId format:", projectId);
+      return res.status(400).json({ message: "Invalid project ID format" });
+    }
+    const project = await Project.findById(projectId)
+      .populate("createdBy", "fullName employeeId")
+      .populate("members", "fullName employeeId");
+    if (!project) {
+      console.log("Project not found:", projectId);
+      return res.status(404).json({ message: "Project not found" });
+    }
+    res.json(project);
+  } catch (error) {
+    console.error("Error fetching project:", error);
+    res.status(500).json({
+      message: "Server error while fetching project",
       error: error.message,
     });
   }
