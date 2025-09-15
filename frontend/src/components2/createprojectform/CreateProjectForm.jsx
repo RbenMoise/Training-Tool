@@ -13,10 +13,13 @@ const CreateProjectForm = () => {
   const authToken = localStorage.getItem("authToken");
 
   useEffect(() => {
+    console.log("CreateProjectForm: Checking auth", { authUserId, authToken });
     window.scrollTo(0, 0);
     // Redirect to signin if not authenticated
     if (!authUserId || !authToken) {
-      navigate("/signin");
+      console.log("CreateProjectForm: Redirecting to /signin");
+      setError("Please sign in to create a project");
+      navigate("/signin", { state: { from: "/createprojectform" } });
     }
   }, [navigate, authUserId, authToken]);
 
@@ -47,11 +50,12 @@ const CreateProjectForm = () => {
 
     if (!authUserId || !authToken) {
       setError("You must be logged in to create a project");
-      navigate("/signin");
+      navigate("/signin", { state: { from: "/createprojectform" } });
       return;
     }
 
     try {
+      console.log("CreateProjectForm: Submitting project", formData);
       const res = await fetch("/att/auth/projects", {
         method: "POST",
         headers: {
@@ -70,7 +74,10 @@ const CreateProjectForm = () => {
 
       const data = await res.json();
       console.log("✅ Project Saved:", data);
-      navigate(`/teamselection/${data.project._id}`);
+      if (!data.project?._id) {
+        throw new Error("Project ID not returned in response");
+      }
+      navigate("/teamselection", { state: { projectId: data.project._id } });
     } catch (error) {
       console.error("❌ Error saving project:", error);
       setError(error.message);
@@ -91,6 +98,15 @@ const CreateProjectForm = () => {
             Set up a new field project with team assignment and date tracking
           </p>
         </div>
+
+        {error && (
+          <div
+            className="error-message"
+            style={{ color: "red", marginBottom: "1rem" }}
+          >
+            {error}
+          </div>
+        )}
 
         <div className="form-container">
           <form onSubmit={handleProjectSubmit} className="project-form">
@@ -157,11 +173,7 @@ const CreateProjectForm = () => {
               >
                 Cancel
               </button>
-              <button
-                type="submit"
-                className="continue-btn"
-                onClick={handleProjectSubmit}
-              >
+              <button type="submit" className="continue-btn">
                 Continue to Team Selection
               </button>
             </div>

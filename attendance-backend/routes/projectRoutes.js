@@ -115,6 +115,70 @@ router.post("/", authMiddleware, async (req, res) => {
   }
 });
 
+// @desc Update project members
+router.patch("/members", authMiddleware, async (req, res) => {
+  console.log("PATCH /att/auth/projects/members: Received request", req.body);
+  try {
+    const { projectId, members } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(projectId)) {
+      console.log("Invalid projectId format:", projectId);
+      return res.status(400).json({ message: "Invalid project ID format" });
+    }
+
+    if (!members || !Array.isArray(members)) {
+      console.log("Invalid members format:", members);
+      return res
+        .status(400)
+        .json({ message: "Members must be an array of user IDs" });
+    }
+
+    for (const memberId of members) {
+      if (!mongoose.Types.ObjectId.isValid(memberId)) {
+        console.log("Invalid member ID format:", memberId);
+        return res
+          .status(400)
+          .json({ message: `Invalid member ID format: ${memberId}` });
+      }
+      const userExists = await User.findById(memberId);
+      if (!userExists) {
+        console.log("User not found for member ID:", memberId);
+        return res
+          .status(400)
+          .json({ message: `User with ID ${memberId} does not exist` });
+      }
+    }
+
+    const project = await Project.findById(projectId);
+    if (!project) {
+      console.log("Project not found:", projectId);
+      return res.status(404).json({ message: "Project not found" });
+    }
+
+    if (project.createdBy.toString() !== req.userId) {
+      console.log("Unauthorized: User is not the project creator", {
+        userId: req.userId,
+        createdBy: project.createdBy,
+      });
+      return res.status(403).json({
+        message: "Unauthorized: Only the project creator can update members",
+      });
+    }
+
+    project.members = members;
+    await project.save();
+
+    console.log("Project members updated:", project);
+    res.json({ message: "Project members updated successfully", project });
+  } catch (error) {
+    console.error("Error updating project members:", error);
+    res.status(500).json({
+      message: "Server error while updating project members",
+      error: error.message,
+    });
+  }
+});
+
 // @desc Get all projects
 router.get("/", authMiddleware, async (req, res) => {
   console.log("GET /att/auth/projects: Fetching projects");
@@ -127,6 +191,21 @@ router.get("/", authMiddleware, async (req, res) => {
     console.error("Error fetching projects:", error);
     res.status(500).json({
       message: "Server error while fetching projects",
+      error: error.message,
+    });
+  }
+});
+
+// @desc Get all users (for team selection)
+router.get("/users", authMiddleware, async (req, res) => {
+  console.log("GET /att/auth/users: Fetching users");
+  try {
+    const users = await User.find({}, "fullName employeeId department");
+    res.json(users);
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    res.status(500).json({
+      message: "Server error while fetching users",
       error: error.message,
     });
   }
